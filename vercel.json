@@ -1,0 +1,5 @@
+{
+  "buildCommand": "node test-random.js && node build.js",
+  "outputDirectory": ".",
+  "framework": null
+}
