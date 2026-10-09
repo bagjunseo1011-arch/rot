@@ -10,8 +10,8 @@
   var KEY = 'roulette-items';
   var SPIN_MS = 4000; // style.css 의 #wheel-rotor transition 시간과 같아야 합니다
   var EXAMPLE = ['짜장면', '짬뽕', '김치찌개', '돈까스', '비빔밥', '햄버거'];
-  // 칸 색 — 도구 표식과 같은 계열을 옅게 깔고 글자는 본문색으로 둡니다
-  var COLORS = ['59,130,246', '236,72,153', '16,185,129', '245,158,11', '139,92,246', '6,182,212', '239,68,68', '99,102,241'];
+  // 칸 색 개수. 색은 tokens.css 의 --wheel-1~6, 칸마다 짝지은 글자색과 함께 style.css 의 .seg--N / .ink--N 이 칠합니다
+  var TONES = 6;
 
   var $ = function (id) { return document.getElementById(id); };
   var input = $('items');
@@ -73,16 +73,17 @@
           ' A100,100 0 ' + (seg > 180 ? 1 : 0) + ' 1 ' +
           (100 * Math.cos(a1)).toFixed(2) + ',' + (100 * Math.sin(a1)).toFixed(2) + ' Z';
 
-      // 마지막 칸이 첫 칸과 같은 색이면 경계가 안 보이므로 한 칸 밀어 줍니다
-      var color = COLORS[i % COLORS.length];
-      if (i === shown - 1 && i > 0 && i % COLORS.length === 0) color = COLORS[1];
+      // 마지막 칸이 첫 칸과 같은 색이면(칸 수 7·13·19·25) 이웃끼리 같은 색이 되므로,
+      // 첫 칸(1)과도 바로 앞 칸(6)과도 다른 2번 색으로 바꿉니다
+      var tone = i % TONES + 1;
+      if (i === shown - 1 && i > 0 && i % TONES === 0) tone = 2;
 
       var mid = (i + 0.5) * seg - 90;
       var flip = mid > 90 && mid < 270 ? ' rotate(180)' : ''; // 왼쪽 절반 글자가 뒤집히지 않게
       var label = items[i].length > maxChars ? items[i].slice(0, maxChars) + '…' : items[i];
 
-      html += '<path d="' + d + '" fill="rgba(' + color + ',.24)" stroke="#fff" stroke-width="1.2"/>' +
-        '<text transform="rotate(' + mid.toFixed(2) + ') translate(60,0)' + flip + '" font-size="' + fontSize.toFixed(1) +
+      html += '<path class="seg seg--' + tone + '" d="' + d + '"/>' +
+        '<text class="ink--' + tone + '" transform="rotate(' + mid.toFixed(2) + ') translate(60,0)' + flip + '" font-size="' + fontSize.toFixed(1) +
         '" text-anchor="middle" dominant-baseline="central">' + esc(label) + '</text>';
     }
     rotor.innerHTML = html;

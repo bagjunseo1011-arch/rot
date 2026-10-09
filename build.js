@@ -24,6 +24,17 @@ function write(file, html, opts = {}) {
   if (!opts.noIndex) BUILT.push({ url: file === 'index.html' ? '' : file, priority: opts.priority || 0.5 });
 }
 
+/**
+ * 파비콘처럼 CSS 변수를 쓸 수 없는 곳에 넣을 색. tokens.css 에서 읽어 와 색 정의를 한 곳에만 둡니다.
+ * 반환값은 data URI 안에 바로 넣을 수 있게 # 을 %23 으로 바꾼 값입니다.
+ */
+const TOKENS_CSS = fs.readFileSync(path.join(OUT, 'assets', 'tokens.css'), 'utf8');
+function tokenColor(name) {
+  const m = TOKENS_CSS.match(new RegExp(`--${name}:\\s*#([0-9A-Fa-f]{6})\\b`));
+  if (!m) throw new Error(`tokens.css 에 --${name} 색(#RRGGBB)이 없습니다`);
+  return '%23' + m[1];
+}
+
 // 라인 아이콘 (24x24, stroke 1.5 — 레시피 규격)
 const ICONS = {
   wheel: '<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/>',
@@ -129,7 +140,7 @@ function layout({ title, description, canonical, body, current, jsonld = [], scr
   <meta property="og:url" content="${esc(url)}">
   <meta property="og:locale" content="${esc(site.locale)}">
   <meta name="twitter:card" content="summary">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%233B82F6'/><path d='M12 2v20M2 12h20' stroke='white' stroke-width='2'/></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='${tokenColor('terracotta')}'/><path d='M12 2v20M2 12h20' stroke='${tokenColor('shell')}' stroke-width='2'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" media="print" onload="this.media='all'">

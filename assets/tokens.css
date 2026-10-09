@@ -1,22 +1,74 @@
 /* ============================================================
-   디자인 토큰 — 레시피에 지정된 값을 그대로 CSS 변수로 고정.
-   여기 값만 바꾸면 사이트 전체가 따라갑니다.
+   디자인 토큰 — 색 시안 B "바다와 모래".
+   색은 이 파일에만 적습니다. style.css · roulette.js · ladder.js 는 아래 역할 토큰만 쓰고,
+   build.js 는 파비콘을 그릴 때 이 파일에서 색을 읽어 갑니다.
+   대비(WCAG)는 바꿀 때마다 다시 계산해 확인하세요 — 글자 4.5:1, 선·아이콘 3:1 이상.
    ============================================================ */
 :root {
-  /* --- 색 (레시피 지정값) --- */
-  --primary: #3B82F6;
-  --text: #1F2937;
-  --sub: #6B7280;
-  --bg: #FFFFFF;
-  --surface: #F9FAFB;
-  --border: #E5E7EB;
+  /* --- 팔레트 --- */
+  --sand: #F5EEDC;          /* 페이지 바탕 */
+  --shell: #FFFBF2;         /* 카드·패널·사다리 판 */
+  --white: #FFFFFF;         /* 입력칸 */
+  --ink: #12394A;           /* 글자·푸터 바탕 */
+  --ink-sub: #4A5F68;       /* 보조 글자 */
+  --sea: #1F5E78;           /* 링크·포커스 */
+  --terracotta: #BF4F36;    /* 주 버튼·현재 메뉴 */
+  --terracotta-dark: #A6422C;
+  --coral: #EC8E72;
+  --teal: #2D7495;
+  --deep-teal: #1F5266;
+  --yellow: #E8E085;
+  --seafoam: #A8D8D0;
+  --foam: #E2F1EE;          /* 안내 상자 바탕 */
+  --mustard: #7D6A00;
+  --sand-line: #D9CDB0;     /* 장식용 테두리 */
+  --line: #738389;          /* 모양이 보여야 하는 테두리 (입력칸·보조 버튼) */
+  --foot-sub: #B9CDD2;
 
-  /* 지정 색에서 파생한 보조 값 (호버·포커스·배지용) */
-  --primary-dark: #2563EB;
-  --primary-soft: #EFF6FF;
-  --primary-ring: rgba(59, 130, 246, 0.28);
+  /* --- 역할 --- */
+  --bg: var(--sand);
+  --surface: var(--shell);
+  --field: var(--white);
+  --text: var(--ink);
+  --sub: var(--ink-sub);
+  --border: var(--sand-line);
+  --border-strong: var(--line);
+  --link: var(--sea);
+  --focus: var(--sea);
+  --accent: var(--terracotta);
+  --accent-hover: var(--terracotta-dark);
+  --on-accent: var(--white);
+  --msg: var(--terracotta-dark);   /* 안내 문구는 글자라 terracotta(모래 위 4.1:1)보다 진하게 */
+  --callout-bg: var(--foam);
 
-  /* --- 타이포 (레시피 지정값) --- */
+  /* 원판 6칸 — 칸 색과 글자색을 짝으로 둡니다 (짝마다 4.5:1 이상) */
+  --wheel-1: var(--coral);     --wheel-1-ink: var(--ink);
+  --wheel-2: var(--teal);      --wheel-2-ink: var(--white);
+  --wheel-3: var(--yellow);    --wheel-3-ink: var(--ink);
+  --wheel-4: var(--deep-teal); --wheel-4-ink: var(--white);
+  --wheel-5: var(--seafoam);   --wheel-5-ink: var(--ink);
+  --wheel-6: var(--sand);      --wheel-6-ink: var(--ink);
+  --wheel-gap: var(--shell);   /* 칸 사이 구분선 */
+  --wheel-rim: var(--ink);
+  /* 화살표: 남색 몸통 + 밝은 테두리 → 어느 칸 위에서도 둘 중 하나가 3:1 이상 */
+  --pointer: var(--ink);
+  --pointer-edge: var(--shell);
+
+  /* 사다리 — 경로 4색(판 위 3:1↑), 공개된 결과 칸은 경로색 바탕 + 흰 글자(4.5:1↑) */
+  --route-1: var(--terracotta);
+  --route-2: var(--teal);
+  --route-3: var(--deep-teal);
+  --route-4: var(--mustard);
+  --on-route: var(--white);
+  --ladder-line: var(--ink-sub);
+
+  /* 푸터 */
+  --foot-bg: var(--ink);
+  --foot-text: var(--sand);
+  --foot-muted: var(--foot-sub);
+  --foot-hover: var(--yellow);
+
+  /* --- 타이포 (레시피 규격 유지) --- */
   /* Inter는 한글 글리프가 없어 한글용 폴백을 뒤에 둡니다. */
   --font-sans: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont,
     'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
@@ -24,12 +76,12 @@
   --fw-body: 400;
   --fw-medium: 500;
 
-  /* --- 버튼 (레시피 지정값) --- */
+  /* --- 버튼 (레시피 규격 유지) --- */
   --btn-radius: 10px;
   --btn-padding: 12px 20px;
   --btn-weight: 700;
 
-  /* --- 아이콘 (레시피 지정값) --- */
+  /* --- 아이콘 (레시피 규격 유지) --- */
   --icon-size: 24px;
   --icon-stroke: 1.5;
 
@@ -37,9 +89,9 @@
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
-  --shadow-sm: 0 1px 2px rgba(16, 24, 40, 0.05);
-  --shadow-md: 0 4px 12px rgba(16, 24, 40, 0.08);
-  --shadow-lg: 0 12px 32px rgba(16, 24, 40, 0.10);
+  --shadow-sm: 0 1px 2px rgba(18, 57, 74, 0.06);
+  --shadow-md: 0 4px 12px rgba(18, 57, 74, 0.10);
+  --shadow-lg: 0 12px 32px rgba(18, 57, 74, 0.12);
   --container: 1120px;
   --header-h: 64px;
 }

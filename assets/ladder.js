@@ -12,7 +12,8 @@
   var ROW_GAP = 30;     // 행 간격 (px)
   var MIN_ROWS = 8;     // 가로줄이 적어도 사다리가 납작해 보이지 않게
   var DRAW_MS = 1100;
-  var COLORS = ['59,130,246', '236,72,153', '16,185,129', '245,158,11', '139,92,246', '6,182,212', '239,68,68', '99,102,241'];
+  var TONES = 4;        // 경로 색 개수 — 색은 tokens.css 의 --route-1~4
+  var tone = function (i) { return 'var(--route-' + (i % TONES + 1) + ')'; };
   var DEFAULT = { p: '민수\n지영\n현우\n서연', r: '당첨\n꽝\n꽝\n꽝' };
   var SVG = 'http://www.w3.org/2000/svg';
 
@@ -83,7 +84,7 @@
     var nameEls = players.map(function (name, i) {
       var b = el('button', { type: 'button', class: 'board__name', 'aria-pressed': 'false', title: name });
       b.textContent = name;
-      b.style.setProperty('--tint', COLORS[i % COLORS.length]);
+      b.style.setProperty('--tone', tone(i));
       b.addEventListener('click', function () { reveal(i); });
       names.appendChild(b);
       return b;
@@ -115,9 +116,10 @@
     game.revealed[i] = true;
 
     var t = R.trace(game.ladder, i);
-    var color = COLORS[i % COLORS.length];
+    var color = tone(i);
     var points = t.path.map(function (p) { return game.x(p[0]) + ',' + game.y(p[1]); }).join(' ');
-    var route = el('polyline', { class: 'route', points: points, stroke: 'rgb(' + color + ')' }, true);
+    var route = el('polyline', { class: 'route', points: points }, true);
+    route.style.stroke = color; // var() 는 SVG 속성이 아니라 style 로 넣어야 적용됩니다
     game.svg.appendChild(route);
     game.nameEls[i].setAttribute('aria-pressed', 'true');
 
@@ -137,7 +139,7 @@
       slot.textContent = g.prizes[t.end];
       slot.title = g.prizes[t.end];
       slot.classList.add('is-open');
-      slot.style.setProperty('--tint', color);
+      slot.style.setProperty('--tone', color);
       var li = document.createElement('li');
       li.textContent = g.players[i] + ' → ' + g.prizes[t.end];
       resultList.appendChild(li);
