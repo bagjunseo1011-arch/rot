@@ -2,7 +2,7 @@
 module.exports = {
   name: '공정뽑기',                 // 가칭 — 도메인을 정할 때 같이 바꾸세요
   tagline: '결과를 어떻게 정하는지 공개하는 랜덤 도구',
-  url: 'https://example.com',      // 도메인을 정하면 교체 (canonical · sitemap · robots 에 들어감)
+  url: 'https://rot-phi.vercel.app', // 지금은 Vercel 기본 주소. 도메인을 사면 이 줄만 바꾸세요 (canonical · sitemap · robots 에 들어감)
   locale: 'ko_KR',
   email: 'bagjunseo1011@gmail.com',
   operator: '미디어소프트웨어학과에서 공부하는 대학생 개발자',
