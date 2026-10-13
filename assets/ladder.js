@@ -136,15 +136,42 @@
     setTimeout(function () {
       if (g !== game) return; // 그사이 새 사다리를 만들었으면 무시
       var slot = g.prizeEls[t.end];
-      slot.textContent = g.prizes[t.end];
-      slot.title = g.prizes[t.end];
-      slot.classList.add('is-open');
-      slot.style.setProperty('--tone', color);
-      var li = document.createElement('li');
-      li.textContent = g.players[i] + ' → ' + g.prizes[t.end];
-      resultList.appendChild(li);
-      if (Object.keys(g.revealed).length === g.players.length) revealAllBtn.disabled = true;
+      var open = function () {
+        if (g !== game) return;
+        slot.classList.remove('is-shaking');
+        slot.textContent = g.prizes[t.end];
+        slot.title = g.prizes[t.end];
+        slot.style.setProperty('--tone', color);
+        slot.classList.add('is-open'); // 뒤집히며 공개 (style.css 의 prize-flip)
+        var li = document.createElement('li');
+        li.textContent = g.players[i] + ' → ' + g.prizes[t.end];
+        resultList.appendChild(li);
+        if (Object.keys(g.revealed).length === g.players.length) revealAllBtn.disabled = true;
+      };
+      if (reduceMotion) { open(); return; }
+      slot.classList.add('is-shaking'); // 공개 직전 살짝 흔들림 (style.css 의 prize-shake)
+      afterAnimation(slot, open);
     }, reduceMotion ? 0 : DRAW_MS);
+  }
+
+  /**
+   * el 의 CSS 애니메이션이 끝나면 done 을 한 번 부릅니다. 시간은 style.css 에만 있고 여기엔 숫자가 없습니다.
+   * animationend 가 오지 않아도(CSS 를 못 불러옴 등) CSS 에 적힌 시간이 지나면 마무리합니다. (roulette.js 에도 같은 함수)
+   */
+  function afterAnimation(el, done) {
+    var cs = getComputedStyle(el);
+    var ms = (parseFloat(cs.animationDuration) || 0) * 1000 * (parseFloat(cs.animationIterationCount) || 1);
+    if (!ms) { done(); return; }
+    var fired = false;
+    var once = function () {
+      if (fired) return;
+      fired = true;
+      el.removeEventListener('animationend', onEnd);
+      done();
+    };
+    var onEnd = function (e) { if (e.target === el) once(); };
+    el.addEventListener('animationend', onEnd);
+    setTimeout(once, ms + 300);
   }
 
   function share() {

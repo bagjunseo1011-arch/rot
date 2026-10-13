@@ -8,7 +8,6 @@
   var R = window.FairRandom;
   var MAX = 30;
   var KEY = 'roulette-items';
-  var SPIN_MS = 4000; // style.css 의 #wheel-rotor transition 시간과 같아야 합니다
   var EXAMPLE = ['짜장면', '짬뽕', '김치찌개', '돈까스', '비빔밥', '햄버거'];
   // 칸 색 개수. 색은 tokens.css 의 --wheel-1~6, 칸마다 짝지은 글자색과 함께 style.css 의 .seg--N / .ink--N 이 칠합니다
   var TONES = 6;
@@ -38,6 +37,27 @@
   function save() {
     try { localStorage.setItem(KEY, input.value); } catch (e) { /* 저장 불가(사생활 보호 모드 등) — 무시 */ }
   }
+  /**
+   * el 의 CSS 애니메이션이 끝나면 done 을 한 번 부릅니다. 회전 시간은 style.css 에만 있고 여기엔 숫자가 없습니다.
+   * animationend 가 오지 않는 경우(CSS 를 못 불러옴 등) 버튼이 영원히 잠기지 않도록, CSS 에 적힌 시간이 지나면 마무리합니다.
+   * (ladder.js 에도 같은 함수가 있습니다)
+   */
+  function afterAnimation(el, done) {
+    var cs = getComputedStyle(el);
+    var ms = (parseFloat(cs.animationDuration) || 0) * 1000 * (parseFloat(cs.animationIterationCount) || 1);
+    if (!ms) { done(); return; }
+    var fired = false;
+    var once = function () {
+      if (fired) return;
+      fired = true;
+      el.removeEventListener('animationend', onEnd);
+      done();
+    };
+    var onEnd = function (e) { if (e.target === el) once(); };
+    el.addEventListener('animationend', onEnd);
+    setTimeout(once, ms + 300);
+  }
+
   function load() {
     var shared = new URLSearchParams(location.search).get('items');
     if (shared) return shared;
@@ -100,33 +120,62 @@
     var jitter = (R.randInt(1001) / 1000 - 0.5) * seg * 0.7;
     var target = -(win + 0.5) * seg + jitter;               // 이 각도에 있으면 win 칸이 12시에 옴
     var delta = (((target - rotation) % 360) + 360) % 360;
-    rotation += 360 * 5 + delta;
+    var from = rotation;
+    rotation += 360 * 5 + delta; // 최종 각도. 연출이 어떻게 흔들리든 마지막엔 반드시 여기서 멈춥니다
 
     spinning = true;
     spinBtn.disabled = true;
     input.disabled = true;
-    resultEl.textContent = '돌아가는 중…';
-    rotor.style.transition = reduceMotion ? 'none' : '';
-    rotor.style.transform = 'rotate(' + rotation + 'deg)';
+    resultEl.classList.remove('is-pop');
+    resultEl.textContent = '돌아가는 중…'; // 최종 정지 전까지 결과·기록·안내는 내보내지 않습니다
 
-    setTimeout(function () {
-      spinning = false;
-      input.disabled = false;
-      var picked = items[win];
-      resultEl.textContent = '결과: ' + picked;
-      var li = document.createElement('li');
-      li.textContent = picked;
-      historyEl.appendChild(li);
+    if (reduceMotion) {
+      rotor.style.transform = 'rotate(' + rotation + 'deg)';
+      finish(win);
+      return;
+    }
 
-      if (removeWinner.checked) {
-        var lines = parse(input.value);
-        lines.splice(win, 1);
-        input.value = lines.join('\n');
-        changed();
-      } else {
-        draw();
-      }
-    }, reduceMotion ? 0 : SPIN_MS);
+    // "멈출 듯 말 듯" 변형 고르기 (style.css 의 .spin-1~3). 보기용이라 결과용 난수(R)와 별개로 Math.random 을 씁니다.
+    // A = 지나치거나 밀리는 폭. 칸 폭의 80%와 25° 중 작은 값이라, 멈추는 자리(칸 중심 ±35%)에 더해도
+    // 가장 큰 1.25A 가 칸 폭 이하 → 바로 옆 칸까지만 가고 두 칸 너머로는 가지 않습니다.
+    var A = Math.min(seg * 0.8, 25);
+    var F = rotation;
+    var variant = Math.floor(Math.random() * 3) + 1;
+    var keys = variant === 1 ? [from, F + A, F]                      // 지나쳤다 돌아오기
+      : variant === 2 ? [from, F - A, F - 1.25 * A, F]               // 멈칫 → 뒤로 밀림 → 넘어감
+      : [from, F + 0.8 * A, F - 0.5 * A, F];                         // 오락가락
+    keys.forEach(function (a, i) { rotor.style.setProperty('--a' + i, a + 'deg'); });
+    rotor.removeAttribute('class');   // 같은 변형이 연달아 나와도 처음부터 재생되도록 떼었다가
+    rotor.getBoundingClientRect();    // 화면을 한 번 계산시킨 뒤
+    rotor.setAttribute('class', 'spin-' + variant); // 다시 붙입니다
+
+    afterAnimation(rotor, function () {
+      rotor.style.transform = 'rotate(' + F + 'deg)'; // 최종 각도를 먼저 고정해야
+      rotor.removeAttribute('class');                  // 애니메이션을 뗄 때 튀지 않습니다
+      finish(win);
+    });
+  }
+
+  /** 원판이 완전히 멈춘 뒤 한 번만: 결과 글자 · 기록 · 뽑힌 항목 빼기 */
+  function finish(win) {
+    spinning = false;
+    input.disabled = false;
+    var picked = items[win];
+    resultEl.textContent = '결과: ' + picked;
+    resultEl.getBoundingClientRect(); // 움직임 줄이기 설정처럼 바로 이어 불릴 때도 톡 효과가 다시 재생되도록
+    resultEl.classList.add('is-pop');
+    var li = document.createElement('li');
+    li.textContent = picked;
+    historyEl.appendChild(li);
+
+    if (removeWinner.checked) {
+      var lines = parse(input.value);
+      lines.splice(win, 1);
+      input.value = lines.join('\n');
+      changed();
+    } else {
+      draw();
+    }
   }
 
   function share() {
@@ -153,6 +202,7 @@
     input.value = EXAMPLE.join('\n');
     historyEl.innerHTML = '';
     resultEl.textContent = '';
+    resultEl.classList.remove('is-pop');
     changed();
   });
 })();
