@@ -13,13 +13,17 @@
   var TONES = 6;
 
   var $ = function (id) { return document.getElementById(id); };
-  var input = $('items');
+  // 홈 첫 화면의 데모 원판에는 입력 패널이 없습니다. 없는 요소는 화면에 붙이지 않은 임시 요소로 대신하고,
+  // 데모는 항상 예시 항목으로 돌며 브라우저에 저장하지 않습니다.
+  var demo = !$('items');
+  var stub = function (tag) { return document.createElement(tag); };
+  var input = $('items') || stub('textarea');
   var rotor = $('wheel-rotor');
   var spinBtn = $('spin');
   var resultEl = $('result');
-  var msg = $('items-msg');
-  var historyEl = $('history');
-  var removeWinner = $('remove-winner');
+  var msg = $('items-msg') || stub('p');
+  var historyEl = $('history') || stub('ol');
+  var removeWinner = $('remove-winner') || stub('input');
 
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var items = [];
@@ -192,11 +196,12 @@
     draw();
   }
 
-  input.value = load();
+  input.value = demo ? EXAMPLE.join('\n') : load();
   draw();
+  spinBtn.addEventListener('click', spin);
+  if (demo) return;
 
   input.addEventListener('input', changed);
-  spinBtn.addEventListener('click', spin);
   $('share').addEventListener('click', share);
   $('reset').addEventListener('click', function () {
     input.value = EXAMPLE.join('\n');

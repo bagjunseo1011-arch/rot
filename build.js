@@ -39,7 +39,6 @@ function tokenColor(name) {
 const ICONS = {
   wheel: '<circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/>',
   menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
-  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
 };
 const icon = (name, cls = '') =>
   `<svg class="icon ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name]}</svg>`;
@@ -143,8 +142,8 @@ function layout({ title, description, canonical, body, current, jsonld = [], scr
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='${tokenColor('terracotta')}'/><path d='M12 2v20M2 12h20' stroke='${tokenColor('shell')}' stroke-width='2'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"></noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap"></noscript>
   <link rel="stylesheet" href="/assets/tokens.css">
   <link rel="stylesheet" href="/assets/style.css">
   ${ld}
@@ -165,11 +164,8 @@ ${body}
 /* ---------- 도구 위젯 (JS 가 채워 넣을 자리) ---------- */
 const NOSCRIPT = '<noscript><p class="callout callout--warn">이 도구는 자바스크립트가 켜져 있어야 동작합니다.</p></noscript>';
 
-const WIDGETS = {
-  roulette: () => `<section class="tool container" aria-label="돌림판">
-  ${NOSCRIPT}
-  <div class="tool__grid">
-    <div class="wheel">
+/** 원판 + 돌리기 버튼 + 결과. 돌림판 페이지와 홈 첫 화면 데모가 같이 씁니다 (roulette.js 가 같은 id 로 찾습니다) */
+const wheelMarkup = () => `<div class="wheel">
       <svg id="wheel" viewBox="-110 -112 220 222" role="img" aria-label="돌림판 원판">
         <g id="wheel-rotor"></g>
         <circle class="wheel__rim" r="100"/>
@@ -178,7 +174,13 @@ const WIDGETS = {
       </svg>
       <button id="spin" class="btn btn--lg" type="button">돌리기</button>
       <p id="result" class="result" aria-live="polite"></p>
-    </div>
+    </div>`;
+
+const WIDGETS = {
+  roulette: () => `<section class="tool container" aria-label="돌림판">
+  ${NOSCRIPT}
+  <div class="tool__grid">
+    ${wheelMarkup()}
     <div class="panel">
       <label for="items">항목 (한 줄에 하나, 2~30개)</label>
       <textarea id="items" rows="9" spellcheck="false"></textarea>
@@ -219,16 +221,18 @@ const WIDGETS = {
 
 /* ---------- 페이지 ---------- */
 function buildHome() {
-  const cards = tools.map((t) => `<article class="tool-card">
-      <h2><a href="/${t.slug}.html">${esc(t.name)}</a></h2>
-      <p>${esc(t.card)}</p>
-      <span class="tool-card__go">바로 쓰기 ${icon('arrow', 'icon--sm')}</span>
-    </article>`).join('');
+  const list = tools.map((t) => `<li><a href="/${t.slug}.html"><span class="tool-list__name">${esc(t.name)}</span><span class="tool-list__desc">${esc(t.card)}</span></a></li>`).join('');
 
   const body = `<section class="hero container">
-  <h1>공정하게 뽑는 랜덤 도구</h1>
-  <p class="lede">돌림판과 사다리타기를 가입 없이 바로 쓸 수 있습니다. 결과를 어떻게 정하는지 각 도구 페이지에 공개해 두었습니다.</p>
-  <div class="tools-grid">${cards}</div>
+  <div class="hero__text">
+    <h1>누가 할지,<br>공정하게.</h1>
+    <p class="lede">돌림판과 사다리타기를 가입 없이 바로 씁니다. 결과를 어떻게 정하는지는 도구마다 공개해 두었습니다.</p>
+    <p class="hero__hint">이 원판은 점심 메뉴 예시입니다. 항목을 바꾸려면 <a href="/roulette.html">돌림판</a>을 여세요.</p>
+  </div>
+  <div class="hero__demo">${wheelMarkup()}</div>
+</section>
+<section class="container" aria-label="도구">
+  <ul class="tool-list">${list}</ul>
 </section>
 <section class="container prose home-principles">
   <h2>이 사이트의 원칙</h2>
@@ -245,8 +249,22 @@ function buildHome() {
     canonical: '/',
     current: '/',
     body,
+    scripts: ['random.js', 'roulette.js'],
     jsonld: [{ '@type': 'WebSite', name: site.name, url: site.url + '/', inLanguage: 'ko' }],
   }), { priority: 1.0 });
+}
+
+/** 측정 결과 막대그래프 (content/tools.js 의 proof). 점선 = 공정할 때의 비율 */
+function proofChart(p) {
+  const scale = Math.ceil(Math.max(...p.values) / 5) * 5 + 5; // 가장 긴 막대가 끝에 붙지 않게 여유
+  const rows = p.values.map((v, i) => `<li><span class="proof__label">${i + 1}번 칸</span>` +
+    `<span class="proof__track"><span class="proof__bar" style="width:${(v / scale * 100).toFixed(1)}%"></span></span>` +
+    `<span class="proof__val">${v.toFixed(1)}%</span></li>`).join('');
+  return `<figure class="proof">
+      <figcaption>${esc(p.title)}</figcaption>
+      <ol class="proof__rows" style="--fair:${(p.fair / scale * 100).toFixed(1)}%">${rows}</ol>
+      <p class="proof__note">${esc(p.note)}</p>
+    </figure>`;
 }
 
 function buildToolPage(t) {
@@ -269,14 +287,14 @@ ${WIDGETS[t.slug]()}
     <ol class="steps">${t.howto.map((s) => `<li><h3>${esc(s.title)}</h3><p>${esc(s.body)}</p></li>`).join('')}</ol>
 
     <h2>${esc(t.fairnessTitle)}</h2>
-    ${t.fairness.map((p) => `<p>${esc(p)}</p>`).join('')}
+    ${t.fairness.map((p, i) => `<p>${esc(p)}</p>` + (t.proof && i === t.proof.after ? proofChart(t.proof) : '')).join('')}
 
     ${faqBlock(t.faq)}
 
     ${other ? `<div class="cta">
       <h2>${esc(other.name)}도 있습니다</h2>
       <p>${esc(other.card)}</p>
-      <a class="btn" href="/${other.slug}.html">${esc(other.name)} 하러 가기 ${icon('arrow', 'icon--sm')}</a>
+      <a class="btn" href="/${other.slug}.html">${esc(other.name)} 하러 가기</a>
     </div>` : ''}
   </article>
 </div>`;

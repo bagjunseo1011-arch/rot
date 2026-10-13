@@ -17,8 +17,8 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='10' fill='%23BF4F36'/><path d='M12 2v20M2 12h20' stroke='%23FFFBF2' stroke-width='2'/></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap"></noscript>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap"></noscript>
   <link rel="stylesheet" href="/assets/tokens.css">
   <link rel="stylesheet" href="/assets/style.css">
   <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"WebSite","name":"공정뽑기","url":"https://rot-phi.vercel.app/","inLanguage":"ko"}]}</script>
@@ -38,17 +38,24 @@
 </header>
   <main id="main">
 <section class="hero container">
-  <h1>공정하게 뽑는 랜덤 도구</h1>
-  <p class="lede">돌림판과 사다리타기를 가입 없이 바로 쓸 수 있습니다. 결과를 어떻게 정하는지 각 도구 페이지에 공개해 두었습니다.</p>
-  <div class="tools-grid"><article class="tool-card">
-      <h2><a href="/roulette.html">돌림판</a></h2>
-      <p>점심 메뉴, 발표 순서, 벌칙, 경품 추첨. 항목을 적고 돌리면 하나에 멈춥니다.</p>
-      <span class="tool-card__go">바로 쓰기 <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-    </article><article class="tool-card">
-      <h2><a href="/ladder.html">사다리타기</a></h2>
-      <p>커피 내기, 청소 당번, 경품 나누기. 출발 자리와 관계없이 공정한 사다리입니다.</p>
-      <span class="tool-card__go">바로 쓰기 <svg class="icon icon--sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
-    </article></div>
+  <div class="hero__text">
+    <h1>누가 할지,<br>공정하게.</h1>
+    <p class="lede">돌림판과 사다리타기를 가입 없이 바로 씁니다. 결과를 어떻게 정하는지는 도구마다 공개해 두었습니다.</p>
+    <p class="hero__hint">이 원판은 점심 메뉴 예시입니다. 항목을 바꾸려면 <a href="/roulette.html">돌림판</a>을 여세요.</p>
+  </div>
+  <div class="hero__demo"><div class="wheel">
+      <svg id="wheel" viewBox="-110 -112 220 222" role="img" aria-label="돌림판 원판">
+        <g id="wheel-rotor"></g>
+        <circle class="wheel__rim" r="100"/>
+        <circle class="wheel__hub" r="10"/>
+        <path class="wheel__pointer" d="M0,-86 L-9,-108 L9,-108 Z"/>
+      </svg>
+      <button id="spin" class="btn btn--lg" type="button">돌리기</button>
+      <p id="result" class="result" aria-live="polite"></p>
+    </div></div>
+</section>
+<section class="container" aria-label="도구">
+  <ul class="tool-list"><li><a href="/roulette.html"><span class="tool-list__name">돌림판</span><span class="tool-list__desc">점심 메뉴, 발표 순서, 벌칙, 경품 추첨. 항목을 적고 돌리면 하나에 멈춥니다.</span></a></li><li><a href="/ladder.html"><span class="tool-list__name">사다리타기</span><span class="tool-list__desc">커피 내기, 청소 당번, 경품 나누기. 출발 자리와 관계없이 공정한 사다리입니다.</span></a></li></ul>
 </section>
 <section class="container prose home-principles">
   <h2>이 사이트의 원칙</h2>
@@ -83,6 +90,7 @@
     <div class="footer__bottom"><span>© 2026 공정뽑기</span></div>
   </div>
 </footer>
-  
+  <script src="/assets/random.js" defer></script>
+  <script src="/assets/roulette.js" defer></script>
 </body>
 </html>

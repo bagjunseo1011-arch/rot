@@ -68,10 +68,12 @@
   --foot-muted: var(--foot-sub);
   --foot-hover: var(--yellow);
 
-  /* --- 타이포 (레시피 규격 유지) --- */
-  /* Inter는 한글 글리프가 없어 한글용 폴백을 뒤에 둡니다. */
-  --font-sans: 'Inter', 'Pretendard', -apple-system, BlinkMacSystemFont,
+  /* --- 타이포 --- */
+  /* 본문은 IBM Plex Sans KR, 제목·결과처럼 크게 보이는 글자는 포스터체 Black Han Sans.
+     Black Han Sans 는 굵기가 하나뿐이라 쓰는 곳에서 font-weight: 400 으로 둡니다 (가짜 볼드 방지) */
+  --font-sans: 'IBM Plex Sans KR', -apple-system, BlinkMacSystemFont,
     'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  --font-display: 'Black Han Sans', var(--font-sans);
   --fw-heading: 700;
   --fw-body: 400;
   --fw-medium: 500;
@@ -86,6 +88,7 @@
   --icon-stroke: 1.5;
 
   /* --- 그 외 --- */
+  --outline: 2px solid var(--ink); /* 그림자 대신 쓰는 굵은 외곽선 — 원판·패널·사다리 판 */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
